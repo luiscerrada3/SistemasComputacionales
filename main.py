@@ -1,6 +1,5 @@
 import numpy as np
 import gym
-import gym_environments
 from agent import QLearning
 from environment import MatematicasEnv
 
