@@ -1,41 +1,30 @@
+from pyBKT import generate
 from pyBKT.models import Model
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def main():
-    
-    emotions = ['NEUTRAL','TRISTE','FELIZ','FURIOSO','MIEDO','SORPRENDIDO']
-    #NEUTRAL = 0
-    #TRISTE = 1
-    #FELIZ=2
-    #FURIOSO =3
-    #MIEDO = 4
-    #SORPRENDIDO = 5
+class ModelBKT():
+    def __init__(self,skills):
+        self.model = Model(seed = 42, num_fits = 1, parallel = True)
+        self.model.fit(data_path = 'DATASET.csv', skills = skills)
+        self.params = self.model.params()
+        
+    def GetRewardBKT(self,skill,emotion):
+        self.GenerateData(skill,emotion)
+        prediction = self.model.predict(data_path = 'newData.csv')
+        data = str(prediction[['correct_predictions']]).replace("correct_predictions\n0","").strip()
+        return data
 
-    
-    model = Model(seed = 42, num_fits = 1, parallel = True)
-    
+    def GenerateData(self,skill,emotion):
+        user_id = ['user_id','user']
+        skill_name = ['skill_name',skill]
+        if (skill == "POLINOMIO"):
+            problem_id = ['problem_id','PX'+str(np.random.randint(2))]
+        else:
+            problem_id = ['problem_id',skill[:1]+str(np.random.randint(2))]    
+        correct = ['correct',str(np.random.randint(2)) ]
+        emotions = ['emotions',emotion]        
+        np.savetxt('newData.csv', [p for p in zip(user_id, skill_name,problem_id,correct,emotions)], delimiter=',', fmt='%s')
 
-    model.fit(data_path = 'DATASET.csv', skills = ['SUMA', 'MULTIPLICACION','PORCENTAJE','POLINOMIO','ECUACION']) #forgets = True
-    params = model.params()
-    print(params)
-    
-
-    print('--------------------------------')
-    
-    training_rmse = model.evaluate(data_path = 'DATAS.csv')
-    training_auc = model.evaluate(data_path = 'DATAS.csv',metric = 'auc')
-    print(' RMSE (Raiz cuadrada del error cuadratico medio :')
-    print(training_rmse)
-    print(' AUC (Area debajo de la curva :')
-    print(training_auc)
-    print('--------------------------------')
-    preds1 = model.predict(data_path = 'DATAS.csv')
-    data = preds1[['problem_id','correct','emotions','correct_predictions','state_predictions']]
-
-    print(data)
-
-if __name__ == "__main__":
-    main()
